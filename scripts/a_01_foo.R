@@ -1,8 +1,10 @@
 options(stringsAsFactors = FALSE)
 
-# rm(list = ls())
-# library(dplyr)
-# library(datzen)
+
+library(dplyr)
+library(datzen)
+
+datzen::rmabd()
 
 dir_parent = "~/projects/proj_skel/"
 setwd(dir_parent)
@@ -11,6 +13,7 @@ dir_rel_scripts = "/scripts/"
 dir_scripts = paste0(getwd(),dir_rel_in)
 list.files(dir_scripts,full.names = TRUE)
 # source(list.files(dir_scripts,full.names = TRUE)[1])
+# ?datzen::readss
 
 dir_rel_data = "/data/raw/"
 dir_data = paste0(getwd(),dir_rel_data)
