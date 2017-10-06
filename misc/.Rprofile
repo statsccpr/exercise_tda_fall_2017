@@ -19,5 +19,8 @@ message('options(stringsAsFactors=FALSE);options(row.names=FALSE);options(digits
 library(datzen)
 # install.packages('dplyr',repos="https://cran.rstudio.com")
 library(dplyr)
-# install.packages("rticles", type = "source")
+
+## journal article templates
+## https://github.com/rstudio/rticles
+# devtools::install_github("rstudio/rticles") 
 
