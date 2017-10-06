@@ -10,7 +10,7 @@ dir_parent = "~/projects/proj_skel/"
 setwd(dir_parent)
 
 dir_rel_scripts = "/scripts/"
-dir_scripts = paste0(getwd(),dir_rel_in)
+dir_scripts = paste0(getwd(),dir_rel_scripts)
 list.files(dir_scripts,full.names = TRUE)
 # source(list.files(dir_scripts,full.names = TRUE)[1])
 # ?datzen::readss
