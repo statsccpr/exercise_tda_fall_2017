@@ -12,6 +12,10 @@ options(digits=3)
 message('options(stringsAsFactors=FALSE);options(row.names=FALSE);options(digits=3)')
 
 ## Packages
+# options(repos = "http://cran.rstudio.com")
+# options(repos = "https://cran.rstudio.com")
+
 # devtools::install_github('mikejacktzen/datzen',force=TRUE)
 library(datzen)
+# install.packages('dplyr',repos="https://cran.rstudio.com")
 library(dplyr)
