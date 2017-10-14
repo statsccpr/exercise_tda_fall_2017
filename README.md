@@ -1,13 +1,16 @@
-# Readme
+# A skeleton directory to jumpstart an analysis project
 
-A skeleton directory to jumpstart an analysis project
+# Setup
 
-## Setup
+1. Start a New Project in Rstudio 
+2. Use option Version Control Git with  
+`https://github.com/mikejacktzen/proj_skel.git`
+3. Use a specific Name for the local applied-project
 
-* use `/misc/.Rprofile`
+* Note: uses `/misc/.Rprofile` which you can modify
 
 
-## Instructions
+# Instructions
 
 * place chickenscratch prototype scripts in `/tests/proto/`
 * place good-standing scripts in `/scripts/`
