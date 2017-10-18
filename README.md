@@ -2,7 +2,7 @@
 
 # Setup
 
-1. Start a New Project in Rstudio 
+1. Start a New Project in [Rstudio](https://www.rstudio.com/) 
 2. Use option Version Control Git with  
 `https://github.com/mikejacktzen/proj_skel.git`
 3. Use a specific Name for the local applied-project

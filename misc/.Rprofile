@@ -5,11 +5,24 @@
 # rm(dir_lib_local)
 
 ## Global Options
-options(stringsAsFactors=FALSE)
-options(row.names=FALSE)
-options(digits=3)
 
-message('options(stringsAsFactors=FALSE);options(row.names=FALSE);options(digits=3)')
+# options(stringsAsFactors=FALSE)
+# options(row.names=FALSE)
+# options(digits=3)
+
+myop = list(stringsAsFactors=FALSE,
+            row.names=FALSE,
+            digits=3)
+
+message('Note: custom global options used')
+print(myop)
+
+options(myop)
+
+# getOption("stringsAsFactors")
+# getOption("row.names")
+
+
 
 ## Packages
 # options(repos = "http://cran.rstudio.com")
