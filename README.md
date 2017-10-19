@@ -31,4 +31,6 @@
 ## Optional Collaboraters
 1. Tell collaborators to `Fork` your github repo as their own local repo
 2. They make changes and `Push` to their own global repo
-3. Everyone can `Compare Across Forks` and make `Pull Requests` to easily integrate
+3. Everyone can `New Pull Request` > `Compare Across Forks` 
+4. Pull `head fork` edits (yours) into `base fork` edits (theirs) 
+
