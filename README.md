@@ -23,4 +23,4 @@
 ## Optional push to Github
 * push your local project to github (not original 'proj_skel')
 1. https://github.com/new
-2. See (this)[http://r-pkgs.had.co.nz/git.html#github-init]
+2. See [this](http://r-pkgs.had.co.nz/git.html#github-init)
