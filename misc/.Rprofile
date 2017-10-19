@@ -18,6 +18,7 @@ message('Note: custom global options used')
 print(myop)
 
 options(myop)
+rm(myop)
 
 # getOption("stringsAsFactors")
 # getOption("row.names")
