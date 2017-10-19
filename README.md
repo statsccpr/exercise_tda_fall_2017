@@ -24,6 +24,9 @@
 * push your local project to new github repo (**NOT** `proj_skel`)
 1. https://github.com/new
 2. See [this](http://r-pkgs.had.co.nz/git.html#github-init)
+* git remote add github git@foo_new_name_from_step_1
+* git push -u github master
+3. See general reference on [remote](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes)
 
 ## Optional Collaboraters
 1. Tell collaborators to `Fork` your github repo as their own local repo
