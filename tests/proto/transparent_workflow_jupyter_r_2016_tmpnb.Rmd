@@ -1,0 +1,861 @@
+
+# 0. Setup - API Key, Load [R] Packages
+
+Use the 'cloud' version of jupyter notebook with R
+
+https://tmpnb.org
+
+You Need a free Census API "Key" - Signup
+
+http://api.census.gov/data/key_signup.html
+
+Install [R] Packages that we will use latter
+
+
+```R
+# install.packages(c('dplyr','httr','jsonlite','tidyr','ggplot2','foreign',
+#                   'reshape','haven','packrat'),
+#                   lib='/usr/local/lib/R/site-library',dependencies=TRUE)
+```
+
+Load [R] Packages that we will use latter
+
+
+```R
+library(dplyr)
+
+library(httr)
+library(jsonlite)
+
+library(tidyr)
+
+
+library(ggplot2)
+
+library(foreign)
+
+# below aren't necessary, they're alternative 'Paths to Rome'
+# library(reshape)
+# library(haven)
+# library(packrat)
+```
+
+
+```R
+install.packages('packrat')
+```
+
+## Mental Exercise: Reflect on how the Jupyter or Rstudio workflow can help transparency
+
+Answer in the jupyter markdown block below
+
+# 1. Obtain - Data Stream
+
+## Application Programming Interface - US Census API
+
+In a nutshell, an API is a set of well-defined 'rules of engagement' to request items from a supplier.
+
+https://en.wikipedia.org/wiki/Application_programming_interface
+    
+
+Most commonly, you glue together 3 items as a web URL
+
+    1. a standardized "base" web url 
+        (doesn't change for anyone or any request)
+        
+    2. your specific request items 
+        (can change, up to the user)
+        
+    3. your user-specific API Key 
+        (fixed for individual user, but different across individuals)
+    
+We will get our requested data from the US Census Bureau API
+
+A one stop shop table of contents that shows the currently available Census datasets
+
+http://api.census.gov/data.html
+
+
+## 2015 Census Planning Database: Tract Level
+We will use the US Census Bureau's API, to request the Census Planning Database: Tract Level
+
+Variables: 
+
+http://api.census.gov/data/2015/pdb/tract/variables.html
+
+API Syntax:
+
+http://api.census.gov/data/2015/pdb/tract?get=FOO1&key=FOO2
+    
+NOTE: clicking the above URL will NOT work
+NOTE: the two "FOO1" and "FOO2" entries, which are placeholders, to be specified by YOU
+
+### Example - Glue: API base url + Request + ...
+
+Michael Tzen Requests:
+
+    Scope - LA County (state:06+county:037)
+    Entity - Tract Level
+    Attributes - County, State, Total Population in 2010 Census, Tract Land Area, Females in Census 2010
+
+Using the 'API rules of engagement' I shoehorn my requests into the WEB URL below:
+
+http://api.census.gov/data/2015/pdb/tract?get=County_name,State_name,Tot_Population_CEN_2010,LAND_AREA,Females_CEN_2010&for=tract:*&in=state:06+county:037&key=YOUR_KEY_GOES_HERE
+
+NOTE: clicking the above URL will NOT work
+
+NOTE: "YOUR_KEY_GOES_HERE" ("FOO2"), my user-specific API Key, is still NOT specified by me
+
+### [R] Example - Glue: API base url + Request + API Key
+[R] 'dplyr' package
+https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html
+
+
+```R
+# put key inside quotes
+YOUR_KEY_GOES_HERE = ""
+```
+
+
+```R
+# library(dplyr)
+
+url_base = "http://api.census.gov/data/2015/pdb/tract?"
+
+request = "County_name,State_name,Tot_Population_CEN_2010,LAND_AREA,Females_CEN_2010&for=tract:*&in=state:06+county:037"
+
+# put key inside quotes
+# YOUR_KEY_GOES_HERE = ""
+
+# pasted output has quotes
+paste0(url_base,'get=',request,'&key=',YOUR_KEY_GOES_HERE)
+
+# paste output, THEN, noquotes
+paste0(url_base,'get=',request,'&key=',YOUR_KEY_GOES_HERE) %>% noquote()
+
+
+```
+
+NOTE: Census API returns your requested data in "JSON" format
+
+https://en.wikipedia.org/wiki/JSON
+
+JSON in a nutshell: a list of key-value pairs.
+The current standard format since it is BOTH machine readable and has human readable layout (looks like a shopping list)
+
+### Modify your request - All Tracts in CA
+
+
+```R
+# add measure name (from Table of Contents), drop off '+county:037" in 'for=tract:*&in=state:06+county:037'
+
+request_more = "County_name,State_name,Tot_Population_CEN_2010,LAND_AREA,Females_CEN_2010&for=tract:*&in=state:06"
+
+paste0(url_base,'get=',request_more,'&key=',YOUR_KEY_GOES_HERE)
+
+# paste output, THEN, noquotes
+paste0(url_base,'get=',request_more,'&key=',YOUR_KEY_GOES_HERE) %>% noquote()
+
+```
+
+#### On Your Own: assemble an API call for New York State
+
+
+```R
+url_base = ""
+
+request = ""
+
+?paste0
+```
+
+## Mental Exercise: Reflect on how the software steps make data obtainment a transparent process
+
+Answer in the jupyter markdown block below
+
+# 2. Input - Data into Software
+
+## Using [R] software, read and store the API returned JSON Data
+
+
+```R
+# library(httr)
+# library(jsonlite)
+
+# url_fin = paste0(url_base,'get=',request,'&key=',YOUR_KEY_GOES_HERE)  # pasted output has quotes
+# url_fin
+
+url_fin_more = paste0(url_base,'get=',request_more,'&key=',YOUR_KEY_GOES_HERE)  # pasted output has quotes
+url_fin = url_fin_more
+
+# ?GET
+req_url_fin = httr::GET(url_fin)
+
+# ?content
+# extract (json) content from a request
+
+json_req = httr::content(req_url_fin, as = "text")
+
+# agrees with 'point and click' return
+# json_req %>% cat()
+
+# human readable, "prettify" like a shopping list
+# prettify(json_req,indent=1)
+```
+
+### Null Values
+
+["Los Angeles County","California",null,null,null,"06","037","137000"]
+
+## Convert JSON Data into Tabular Form - Characters and Numerics are Fundamental
+
+### Note: here, we manually copy+paste .json data returned from Census API
+the cell above using json_req = httr::content() is the programatic [R] way of getting the API content
+
+* caveat... we need network access for R and Jupyter (denied)
+
+'Error in curl::curl_fetch_memory(url, handle = handle): Couldn't resolve host name'
+
+So... let's just get the content manually. what we are doing here below.
+
+
+
+workaround: just copy and paste returned json (in browser tab)
+after 'clicking' the r assembled API call
+
+* 'patchwork' but students can see that .json is nothing more than a format like .csv
+* only used [R] to assemble the URL for API call
+* couldn't use R to 'navigate' the URL via `curl::curl_fetch_memory()`
+* BEAUTY of jupyter being in-browser, the assembled URL can be clicked (this is completley from jupyter / markdown)
+
+
+```R
+json_req = '[["County_name","State_name","Tot_Population_CEN_2010","LAND_AREA","Females_CEN_2010","state","county","tract"],
+["Alameda County","California","2937","2.657","1476","06","001","400100"]]'
+```
+
+
+```R
+# ?fromJSON
+# https://cran.r-project.org/web/packages/jsonlite/vignettes/json-apis.html
+
+# NEEDS quotes around final url
+# url_fin = url_fin_more
+
+print(url_fin)
+
+data_pdb_raw = json_req %>%
+# url_fin %>% 
+# noquote() %>%
+fromJSON()
+
+dim(data_pdb_raw)
+
+# json 'null' is correctly encoded as r matrix 'NA'
+
+summary(data_pdb_raw)
+# r matrix shows 1 NA, which agrees with single null in json source
+
+sum(is.na(data_pdb_raw))
+which(is.na(data_pdb_raw), arr.ind = TRUE)
+
+```
+
+
+```R
+head(data_pdb_raw)
+```
+
+
+```R
+data_pdb_raw[unique(which(is.na(data_pdb_raw), arr.ind = TRUE)[,1]),]
+
+```
+
+
+```R
+dim(data_pdb_raw)
+
+# NA in row 1475
+data_pdb_raw[1475,]
+# data_pdb_raw = data_pdb_raw[-1475,]
+
+
+data_pdb_raw[unique(which(is.na(data_pdb_raw), arr.ind = TRUE)[,1]),]
+
+
+data_pdb_raw = data_pdb_raw[-unique(which(is.na(data_pdb_raw), arr.ind = TRUE)[,1]),]
+
+
+sum(is.na(data_pdb_raw))
+
+dim(data_pdb_raw)
+
+# <8b> is a jupyter idiom for '...' shortening output
+data_pdb_raw
+
+```
+
+### Hurdle: Immediate Matrix without Header (Variable Names)
+
+BUT, It IS there in row 1. EVERYTHING is currently read as 'character' strings of text stored in a tabular MATRIX
+
+I view character strings as a huge benefit. Keeping everything as characters (at least initially) allows for consistent behavior when you merge, filter, apply logic to your data. It Prevents you from shooting yourself in the foot (like adding two strings, say "State Code" + "County Code"). This is Tomatoe = Potatoe. Later on, we explicitly convert intended numeric numbers into numeric data (Tomatoe = Tomatoe).
+
+
+```R
+class(data_pdb_raw)
+dim(data_pdb_raw)
+
+str(data_pdb_raw)
+
+colnames(data_pdb_raw)
+rownames(data_pdb_raw)
+
+```
+
+### Hurdle: Humans recognize that first row represents variable names, Need Computer to recognize it too (as column names)
+
+
+```R
+# first row of matrix - humans understand as the intended variable names
+data_pdb_raw[1,]
+
+# column names (header) of matrix - computer understands as empty
+colnames(data_pdb_raw)
+
+# make the assignment: column names of matrix = first row of matrix
+colnames(data_pdb_raw) = data_pdb_raw[1,]
+
+# assignment reflected but first row still present (redundant)
+data_pdb_raw %>% head()
+
+# data_pdb_mat: a new object distinguishing it from _raw source
+# throw away first row
+
+data_pdb_mat = data_pdb_raw[-1,] 
+
+data_pdb_mat
+
+```
+
+### Hurdle: Matrix to Dataframe, but [R] default converts characters, we want to keep everything as Fundamental 'Character' string
+
+options(stringsAsFactors = FALSE)
+
+
+
+```R
+# set options
+```
+
+
+```R
+str(data_pdb_mat)
+
+# NOTE: default of [R]: automaticaly converting 'character' to 'factor' 
+# this is an artifact leftover from oldtime convenience
+
+data_pdb_mat %>% as.data.frame() %>% str()
+
+# turn that default option OFF
+options(stringsAsFactors = FALSE)
+
+data_pdb_mat %>% as.data.frame() %>% str()
+
+# store as data frame
+data_pdb_df = data_pdb_mat %>% as.data.frame()
+
+
+```
+
+### Hurdle: Humans recognize that 'Tot_Population_CEN_2010' represents a count, Need Computer to recognize it too (as 'Numeric' number)
+
+
+```R
+data_pdb_df %>%
+str()
+
+# want numeric numbers for
+# Tot_Population_CEN_2010
+# LAND_AREA
+# Females_CEN_2010
+
+# more data
+data_pdb_df = data_pdb_df %>% 
+mutate(Tot_Population_CEN_2010=as.numeric(Tot_Population_CEN_2010),
+       LAND_AREA=as.numeric(LAND_AREA)       
+      ) 
+
+data_pdb_df %>%
+str()
+
+data_pdb_df %>%
+summary()
+
+
+```
+
+#### On Your Own: convert 'Females_CEN_2010' to a numeric number
+
+
+```R
+data_pdb_df = data_pdb_df %>% 
+mutate(      
+      ) 
+
+# check structure
+```
+
+## Clear Hurdle? Basic Assertions - Check some Snapple Facts
+
+### Can Population be Negative?
+
+
+```R
+data_pdb_df %>% 
+filter(Tot_Population_CEN_2010 < 0)
+
+data_pdb_df %>% 
+filter(Tot_Population_CEN_2010 < 0) %>%
+nrow()
+```
+
+### Basic Assertion: How ManyTracts have Positive Population?
+
+
+```R
+data_pdb_df %>% 
+filter(Tot_Population_CEN_2010 > 0) %>% nrow()
+```
+
+### Basic Assertion: How Many Tracts have Positive OR Zero Population? (Should be all Tracts in LA County)
+
+
+```R
+# apply filter where Total Population Count >=0
+
+data_pdb_df %>% 
+filter((Tot_Population_CEN_2010 > 0) || (Tot_Population_CEN_2010 == 0)) %>% 
+nrow()
+
+# number of rows in census returned dataset (raw)
+# no filter
+data_pdb_df %>% nrow()
+```
+
+#### On Your Own: How Many Tracts have Zero Population?
+
+
+```R
+data_pdb_df %>% 
+filter() %>% 
+nrow()
+```
+
+### Basic Assertion: Does our sum of LA County population agree with Independent Source?
+
+
+```R
+# is.na(data_pdb_df)
+# summary(data_pdb_df)
+
+data_pdb_df %>%
+group_by(County_name) %>%
+summarise(Tot_Pop_County = sum(Tot_Population_CEN_2010))
+
+summary(data_pdb_df)
+
+```
+
+https://www.google.com/search?q=how+many+people+in+la+county&ie=utf-8&oe=utf-8
+
+## Mental Exercise: Reflect on how the software steps make reading in data a transparent process
+
+Answer in the jupyter markdown block below
+
+# 3. Wrangle - Data into Analysis Ready Tabular Form
+
+https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf
+
+## Start with Tidy data, then Wrangle to Coordinate
+The API returned census data is already in "Tidy" format (each row is an entity, each column is a measure)
+
+Example: Tidy
+
+Name | Year | Age | Sex 
+--------- | ------------- | -------------- | --------------
+Arnold Schwarzenegger | 2030 | 34 | M
+Arnold Schwarzenegger | 2040 | 44 | M
+Sofia Vergara | 2030 | 30 | F
+Sofia Vergara | 2040 | 40 | F
+
+Example: Coordinate
+
+Name | Year | Variable Name | Variable Value
+- | - | - | -
+Arnold Schwarzenegger | 2030 | Age | 34
+Arnold Schwarzenegger |2030 | Sex | M
+Arnold Schwarzenegger | 2040 | Age | 44
+Arnold Schwarzenegger | 2040 | Sex | M
+Sofia Vergara | 2030 | Age | 30
+Sofia Vergara | 2030 | Sex | F
+Sofia Vergara | 2040 | Age | 40
+Sofia Vergara | 2040 | Sex | F
+
+
+### Create Primary Key / Entity ID by gluing raw entity variables via 'tidyr' and unite()
+
+
+```R
+# library(tidyr)
+
+data_pdb_df %>% 
+head()
+
+# [State,County,Tract] are the three variables, when viewed together, define the entity id
+# County_name, State_name, Tot_Population_CEN_2010, are the three variables that are measurements of the entitiy
+
+# ?tidyr::unite() to glue together variables into single entity id
+
+# primary key := create a single entity id, by uniting the three entity variables
+data_pdb_df_pk = data_pdb_df %>% 
+unite("state_county_tract",state,county,tract)
+
+data_pdb_df_pk %>% head()
+
+# note: unite() default behavior drops original entity variables, and glues in underscore "_"
+
+```
+
+#### On Your Own: ?separate() the 'state_county_tract' variable back into 3 separate variables for state, county, tract 
+
+
+```R
+?tidyr::separate
+```
+
+
+```R
+data_pdb_df_pk %>% 
+```
+
+ #### Many ways to Rome: Create Primary Key / Entity ID
+
+
+```R
+# Alternative way of creating entity id by gluing entity variables
+# using mutate(paste0())
+
+data_pdb_df %>% 
+mutate(state_county_tract_v2 = paste0(state,county,tract)) %>% 
+head()
+
+```
+
+### Tidy to Coordinate via 'tidyr' and gather()
+
+
+```R
+# Except for our entity id "state_county_tract"
+# gather all columns (several measures) into two seperate columns [variable name,variable value]
+
+data_pdb_df_pk %>%
+gather(var_name,var_val,-state_county_tract) %>%
+head()
+
+
+data_pdb_df_pk %>%
+gather(var_name,var_val,-state_county_tract) %>%
+tail()
+
+
+data_pdb_df_coord = data_pdb_df_pk %>%
+gather(var_name,var_val,-state_county_tract)
+```
+
+#### Many ways to Rome - Tidy to Coordinate via 'reshape' and melt()
+NOTE: 'reshape' more powerful, sometimes overkill. Allows more control of "melting" and "casting" into various tabular shapes
+
+
+```R
+# library(reshape)
+
+# Many ways to Rome: alternative method
+# ?reshape2::melt() to coordinate format
+
+# data_pdb_df_pk %>%
+# reshape::melt("state_county_tract") %>%
+# head()
+
+# data_pdb_df_pk %>%
+# reshape::melt("state_county_tract") %>%
+# tail()
+```
+
+## Mental Exercise: Reflect on how the wrangled data structures can help transparency
+
+Answer in the jupyter markdown block below
+
+# 4. Analyze - Plot, Summary, Model
+
+## Plot a Graphic
+
+
+
+```R
+data_pdb_df_pk %>% head()
+
+# library(ggplot2)
+
+# convert 
+## Relevel the cars by mpg
+## this allows the plot to sort from most to least
+
+# histogram of population count (each entity is a tract)
+qplot(data=data_pdb_df_pk,Tot_Population_CEN_2010,geom="histogram")
+
+
+# p = ggplot(data_pdb_df_pk, aes(x=reorder(state_county_tract,-Tot_Population_CEN_2010), y=Tot_Population_CEN_2010)) + 
+#     geom_point(stat="identity")
+
+```
+
+### On Your Own: Request Tract Size Variable, Make scatterplot of Population by Tract Size
+
+http://api.census.gov/data/2015/pdb/tract/variables/LAND_AREA.json
+
+
+```R
+ggplot(data_pdb_df_pk, aes(x=(LAND_AREA),y=(Tot_Population_CEN_2010))) + 
+geom_point()
+
+
+ggplot(data_pdb_df_pk, aes(x=log(LAND_AREA),y=log(Tot_Population_CEN_2010))) + 
+geom_point()
+
+```
+
+## Summarize a Table
+
+### Assume A Table is Our Desired Analysis
+County Level Count of Males and Females, sorted in decreasing order by Total Population Count
+
+
+```R
+str(data_pdb_df_pk)
+
+data_pdb_df_pk %>%
+mutate(Num_Males_2010 = Tot_Population_CEN_2010 - Females_CEN_2010) %>%
+group_by(State_name,County_name) %>%
+summarise(Num_M_2010_Cou=sum(Num_Males_2010),
+         Num_F_2010_Cou=sum(Females_CEN_2010),
+          Num_All_2010_Cou=sum(Tot_Population_CEN_2010)
+         ) %>%
+arrange(desc(Num_All_2010_Cou))
+
+tab_sex_county = data_pdb_df_pk %>%
+mutate(Num_Males_2010 = Tot_Population_CEN_2010 - Females_CEN_2010) %>%
+group_by(State_name,County_name) %>%
+summarise(Num_M_2010_Cou=sum(Num_Males_2010),
+         Num_F_2010_Cou=sum(Females_CEN_2010),
+          Num_All_2010_Cou=sum(Tot_Population_CEN_2010)
+         ) %>%
+arrange(desc(Num_All_2010_Cou))
+
+
+```
+
+#### Assertion Check: How Many Counties in California?
+
+https://www.google.com/search?q=how+many+counties+in+california&ie=utf-8&oe=utf-8
+
+## Fit a Regression Model
+
+Regress Population Count on Land Area
+
+
+```R
+names(data_pdb_df_pk)
+
+data_pdb_df_pk %>%
+head()
+
+# intercept allowed to be estimated when land area is 0
+lm(Tot_Population_CEN_2010 ~ LAND_AREA,data=data_pdb_df_pk) %>%
+summary()
+
+# force intercept to be 0
+# 0 population when 0 land area
+lm(Tot_Population_CEN_2010 ~ -1 + LAND_AREA, data=data_pdb_df_pk) %>%
+summary()
+
+# log-outcome and log-predictor, estimate the intercept
+lm(log(Tot_Population_CEN_2010 + 0.01) ~ 1 + log(LAND_AREA + 0.01), data=data_pdb_df_pk) %>%
+summary()
+
+
+```
+
+## Mental Exercise: Reflect on how you got to this "final" analysis stage. Compare the amount of code in 'Analyze Step 4' with Steps 1-3.
+
+Answer in the jupyter markdown block below
+
+# 0b. ORGANIZE!
+
+Organization is a fundamental part of Transparency, hence step 0. Further, Organization is crucial during handoff migrations.
+
+## Transfer your wrangled data to a new environment
+
+Output: 'data_pdb_df_pk'
+
+### In .csv format (Universal), Output Table to Computer File
+
+Note: your_output_dir = '/home/foo' needs to represent your output directory
+
+
+```R
+getwd()
+```
+
+
+```R
+# your_output_dir = 'Z:\\projects\\workshop_ccpr_stat\\workshop_data_workflow\\data_proc\\'
+
+your_output_dir = '/home/jovyan/work/test/'
+
+# ?write.csv
+
+# write.csv(tab_sex_county,paste0(your_output_dir,'tab_sex_county.csv'))
+
+# drop row number
+
+write.csv(data_pdb_df_pk,paste0(your_output_dir,'data_pdb_df_pk.csv'),row.names=FALSE)
+```
+
+
+```R
+# list.files('/home/jovyan/work/test/')
+list.files(your_output_dir)
+```
+
+### In .dta format (Stata), Output Table to Computer File
+
+
+```R
+# library(haven)
+
+# ?write_dta
+# write_dta(data_pdb_df_pk, paste0(your_output_dir,'data_pdb_df_pk_haven.dta'))
+# ?read_dta
+
+library(foreign)
+# ?read.dta
+
+write.dta(data_pdb_df_pk,paste0(your_output_dir,'data_pdb_df_pk_foreign.dta'))
+
+```
+
+
+```R
+list.files('/home/jovyan/work/test/')
+```
+
+## Transfer your software versions. What versions are you using!?
+
+Archive your software versions!
+
+`?sessionInfo()`
+
+**type in the function yourself in the Code box below**
+
+
+```R
+# sessionInfo()
+```
+
+### Software Versions... big whoop... So What? How do I make use of this info?
+
+
+```R
+# library(devtools)
+# devtools::install_version("tidyr", version = "0.3.1", repos = "http://cran.us.r-project.org")
+```
+
+### Bundle the packages, export, and then unbundle in another environment
+
+Even easier than manually installing specific version 1-by-1
+
+https://rstudio.github.io/packrat/
+
+
+```R
+library(packrat)
+
+# ?packrat::bundle
+packrat::bundle()
+
+# ?packrat::unbundle
+bundle_path = "/foo_path/foo.tar.gz"
+packrat::unbundle(bundle=bundle_path)
+```
+
+## Transfer your Jupyter File (from tmpnb.org) to your personal computer
+Download as a .ipynb file or an .r
+
+![](http://gdurl.com/udho)
+
+
+# Appendix
+
+## Resources
+
+* Jupyter
+http://jupyter.org/
+
+* Rstudio
+https://www.rstudio.com/
+
+* “The Elements of Data Analytic Style”
+https://leanpub.com/datastyle
+
+* “Tidy Data”
+http://www.jstatsoft.org/v59/i10
+
+* Open Science Framework
+https://osf.io/
+
+## [R] to Stata Interface
+
+https://github.com/EconometricsBySimulation/RStata/wiki/Dictionary:-Stata-to-R
+
+## Need a STATA copy?
+http://www.ccpr.ucla.edu/CCPRWebsite/services/computing
+
+## Need a STATA hint?
+http://www.ats.ucla.edu/stat/stata/modules/
+
+
+
+## Fit a regression model in Stata
+
+### read in data
+
+use "Z:\\projects\\workshop_ccpr_stat\\workshop_data_workflow\\data_proc\\data_pdb_df_pk_foreign.dta", clear
+
+
+### estimate intercept
+reg Tot_Population_CEN_2010 LAND_AREA
+
+
+### force intercept to be 0
+reg Tot_Population_CEN_2010 LAND_AREA, nocon
+
+
+### log-outcome and log-predictor, estimate the intercept
+
+generate log_Tot_Pop = log(Tot_Population_CEN_2010+0.01)  
+generate log_Land_Area = log(LAND_AREA+0.01)  
+
+reg log_Tot_Pop log_Land_Area
+
