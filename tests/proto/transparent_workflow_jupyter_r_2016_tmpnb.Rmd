@@ -12,7 +12,7 @@ http://api.census.gov/data/key_signup.html
 Install [R] Packages that we will use latter
 
 
-```R
+```{r}
 # install.packages(c('dplyr','httr','jsonlite','tidyr','ggplot2','foreign',
 #                   'reshape','haven','packrat'),
 #                   lib='/usr/local/lib/R/site-library',dependencies=TRUE)
@@ -21,7 +21,7 @@ Install [R] Packages that we will use latter
 Load [R] Packages that we will use latter
 
 
-```R
+```{r}
 library(dplyr)
 
 library(httr)
@@ -41,7 +41,7 @@ library(foreign)
 ```
 
 
-```R
+```{r}
 install.packages('packrat')
 ```
 
@@ -111,13 +111,13 @@ NOTE: "YOUR_KEY_GOES_HERE" ("FOO2"), my user-specific API Key, is still NOT spec
 https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html
 
 
-```R
+```{r}
 # put key inside quotes
 YOUR_KEY_GOES_HERE = ""
 ```
 
 
-```R
+```{r}
 # library(dplyr)
 
 url_base = "http://api.census.gov/data/2015/pdb/tract?"
@@ -146,7 +146,7 @@ The current standard format since it is BOTH machine readable and has human read
 ### Modify your request - All Tracts in CA
 
 
-```R
+```{r}
 # add measure name (from Table of Contents), drop off '+county:037" in 'for=tract:*&in=state:06+county:037'
 
 request_more = "County_name,State_name,Tot_Population_CEN_2010,LAND_AREA,Females_CEN_2010&for=tract:*&in=state:06"
@@ -161,7 +161,7 @@ paste0(url_base,'get=',request_more,'&key=',YOUR_KEY_GOES_HERE) %>% noquote()
 #### On Your Own: assemble an API call for New York State
 
 
-```R
+```{r}
 url_base = ""
 
 request = ""
@@ -178,7 +178,7 @@ Answer in the jupyter markdown block below
 ## Using [R] software, read and store the API returned JSON Data
 
 
-```R
+```{r}
 # library(httr)
 # library(jsonlite)
 
@@ -229,13 +229,13 @@ after 'clicking' the r assembled API call
 * BEAUTY of jupyter being in-browser, the assembled URL can be clicked (this is completley from jupyter / markdown)
 
 
-```R
+```{r}
 json_req = '[["County_name","State_name","Tot_Population_CEN_2010","LAND_AREA","Females_CEN_2010","state","county","tract"],
 ["Alameda County","California","2937","2.657","1476","06","001","400100"]]'
 ```
 
 
-```R
+```{r}
 # ?fromJSON
 # https://cran.r-project.org/web/packages/jsonlite/vignettes/json-apis.html
 
@@ -262,18 +262,18 @@ which(is.na(data_pdb_raw), arr.ind = TRUE)
 ```
 
 
-```R
+```{r}
 head(data_pdb_raw)
 ```
 
 
-```R
+```{r}
 data_pdb_raw[unique(which(is.na(data_pdb_raw), arr.ind = TRUE)[,1]),]
 
 ```
 
 
-```R
+```{r}
 dim(data_pdb_raw)
 
 # NA in row 1475
@@ -303,7 +303,7 @@ BUT, It IS there in row 1. EVERYTHING is currently read as 'character' strings o
 I view character strings as a huge benefit. Keeping everything as characters (at least initially) allows for consistent behavior when you merge, filter, apply logic to your data. It Prevents you from shooting yourself in the foot (like adding two strings, say "State Code" + "County Code"). This is Tomatoe = Potatoe. Later on, we explicitly convert intended numeric numbers into numeric data (Tomatoe = Tomatoe).
 
 
-```R
+```{r}
 class(data_pdb_raw)
 dim(data_pdb_raw)
 
@@ -317,7 +317,7 @@ rownames(data_pdb_raw)
 ### Hurdle: Humans recognize that first row represents variable names, Need Computer to recognize it too (as column names)
 
 
-```R
+```{r}
 # first row of matrix - humans understand as the intended variable names
 data_pdb_raw[1,]
 
@@ -345,12 +345,12 @@ options(stringsAsFactors = FALSE)
 
 
 
-```R
+```{r}
 # set options
 ```
 
 
-```R
+```{r}
 str(data_pdb_mat)
 
 # NOTE: default of [R]: automaticaly converting 'character' to 'factor' 
@@ -372,7 +372,7 @@ data_pdb_df = data_pdb_mat %>% as.data.frame()
 ### Hurdle: Humans recognize that 'Tot_Population_CEN_2010' represents a count, Need Computer to recognize it too (as 'Numeric' number)
 
 
-```R
+```{r}
 data_pdb_df %>%
 str()
 
@@ -399,7 +399,7 @@ summary()
 #### On Your Own: convert 'Females_CEN_2010' to a numeric number
 
 
-```R
+```{r}
 data_pdb_df = data_pdb_df %>% 
 mutate(      
       ) 
@@ -412,7 +412,7 @@ mutate(
 ### Can Population be Negative?
 
 
-```R
+```{r}
 data_pdb_df %>% 
 filter(Tot_Population_CEN_2010 < 0)
 
@@ -424,7 +424,7 @@ nrow()
 ### Basic Assertion: How ManyTracts have Positive Population?
 
 
-```R
+```{r}
 data_pdb_df %>% 
 filter(Tot_Population_CEN_2010 > 0) %>% nrow()
 ```
@@ -432,7 +432,7 @@ filter(Tot_Population_CEN_2010 > 0) %>% nrow()
 ### Basic Assertion: How Many Tracts have Positive OR Zero Population? (Should be all Tracts in LA County)
 
 
-```R
+```{r}
 # apply filter where Total Population Count >=0
 
 data_pdb_df %>% 
@@ -447,7 +447,7 @@ data_pdb_df %>% nrow()
 #### On Your Own: How Many Tracts have Zero Population?
 
 
-```R
+```{r}
 data_pdb_df %>% 
 filter() %>% 
 nrow()
@@ -456,7 +456,7 @@ nrow()
 ### Basic Assertion: Does our sum of LA County population agree with Independent Source?
 
 
-```R
+```{r}
 # is.na(data_pdb_df)
 # summary(data_pdb_df)
 
@@ -507,7 +507,7 @@ Sofia Vergara | 2040 | Sex | F
 ### Create Primary Key / Entity ID by gluing raw entity variables via 'tidyr' and unite()
 
 
-```R
+```{r}
 # library(tidyr)
 
 data_pdb_df %>% 
@@ -531,19 +531,19 @@ data_pdb_df_pk %>% head()
 #### On Your Own: ?separate() the 'state_county_tract' variable back into 3 separate variables for state, county, tract 
 
 
-```R
+```{r}
 ?tidyr::separate
 ```
 
 
-```R
+```{r}
 data_pdb_df_pk %>% 
 ```
 
  #### Many ways to Rome: Create Primary Key / Entity ID
 
 
-```R
+```{r}
 # Alternative way of creating entity id by gluing entity variables
 # using mutate(paste0())
 
@@ -556,7 +556,7 @@ head()
 ### Tidy to Coordinate via 'tidyr' and gather()
 
 
-```R
+```{r}
 # Except for our entity id "state_county_tract"
 # gather all columns (several measures) into two seperate columns [variable name,variable value]
 
@@ -578,7 +578,7 @@ gather(var_name,var_val,-state_county_tract)
 NOTE: 'reshape' more powerful, sometimes overkill. Allows more control of "melting" and "casting" into various tabular shapes
 
 
-```R
+```{r}
 # library(reshape)
 
 # Many ways to Rome: alternative method
@@ -603,7 +603,7 @@ Answer in the jupyter markdown block below
 
 
 
-```R
+```{r}
 data_pdb_df_pk %>% head()
 
 # library(ggplot2)
@@ -626,7 +626,7 @@ qplot(data=data_pdb_df_pk,Tot_Population_CEN_2010,geom="histogram")
 http://api.census.gov/data/2015/pdb/tract/variables/LAND_AREA.json
 
 
-```R
+```{r}
 ggplot(data_pdb_df_pk, aes(x=(LAND_AREA),y=(Tot_Population_CEN_2010))) + 
 geom_point()
 
@@ -642,7 +642,7 @@ geom_point()
 County Level Count of Males and Females, sorted in decreasing order by Total Population Count
 
 
-```R
+```{r}
 str(data_pdb_df_pk)
 
 data_pdb_df_pk %>%
@@ -675,7 +675,7 @@ https://www.google.com/search?q=how+many+counties+in+california&ie=utf-8&oe=utf-
 Regress Population Count on Land Area
 
 
-```R
+```{r}
 names(data_pdb_df_pk)
 
 data_pdb_df_pk %>%
@@ -714,12 +714,12 @@ Output: 'data_pdb_df_pk'
 Note: your_output_dir = '/home/foo' needs to represent your output directory
 
 
-```R
+```{r}
 getwd()
 ```
 
 
-```R
+```{r}
 # your_output_dir = 'Z:\\projects\\workshop_ccpr_stat\\workshop_data_workflow\\data_proc\\'
 
 your_output_dir = '/home/jovyan/work/test/'
@@ -734,7 +734,7 @@ write.csv(data_pdb_df_pk,paste0(your_output_dir,'data_pdb_df_pk.csv'),row.names=
 ```
 
 
-```R
+```{r}
 # list.files('/home/jovyan/work/test/')
 list.files(your_output_dir)
 ```
@@ -742,7 +742,7 @@ list.files(your_output_dir)
 ### In .dta format (Stata), Output Table to Computer File
 
 
-```R
+```{r}
 # library(haven)
 
 # ?write_dta
@@ -757,7 +757,7 @@ write.dta(data_pdb_df_pk,paste0(your_output_dir,'data_pdb_df_pk_foreign.dta'))
 ```
 
 
-```R
+```{r}
 list.files('/home/jovyan/work/test/')
 ```
 
@@ -770,14 +770,14 @@ Archive your software versions!
 **type in the function yourself in the Code box below**
 
 
-```R
+```{r}
 # sessionInfo()
 ```
 
 ### Software Versions... big whoop... So What? How do I make use of this info?
 
 
-```R
+```{r}
 # library(devtools)
 # devtools::install_version("tidyr", version = "0.3.1", repos = "http://cran.us.r-project.org")
 ```
@@ -789,7 +789,7 @@ Even easier than manually installing specific version 1-by-1
 https://rstudio.github.io/packrat/
 
 
-```R
+```{r}
 library(packrat)
 
 # ?packrat::bundle
