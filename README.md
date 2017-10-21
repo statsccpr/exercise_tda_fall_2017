@@ -2,8 +2,8 @@
 
 Built on a skeleton directory to jumpstart an analysis project
 * Look at the Git history of this file to see how it evolved
-* Hint, I just changed the title name, added this paragraph here
-* added some files
+* I just changed the title name and added this paragraph here
+* I added some project related files
 
 
 # Setup
