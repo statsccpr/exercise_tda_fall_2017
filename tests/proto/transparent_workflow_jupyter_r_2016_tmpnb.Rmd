@@ -42,7 +42,7 @@ library(foreign)
 
 
 ```{r}
-install.packages('packrat')
+# install.packages('packrat')
 ```
 
 ## Mental Exercise: Reflect on how the Jupyter or Rstudio workflow can help transparency
@@ -111,16 +111,24 @@ NOTE: "YOUR_KEY_GOES_HERE" ("FOO2"), my user-specific API Key, is still NOT spec
 https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html
 
 
-```{r}
+```{r, echo=FALSE}
 # put key inside quotes
-YOUR_KEY_GOES_HERE = ""
+
 ```
+
+NOTE: Census switched to https so see [examples](https://api.census.gov/data/2015/pdb/blockgroup/examples.html)
 
 
 ```{r}
 # library(dplyr)
 
-url_base = "http://api.census.gov/data/2015/pdb/tract?"
+# url_base = "http://api.census.gov/data/2015/pdb/tract?"
+
+# 
+url_base = "http://api.census.gov/data/2015/pdb/tract?" %>%
+  gsub(.,pattern="http",replacement="https")
+
+
 
 request = "County_name,State_name,Tot_Population_CEN_2010,LAND_AREA,Females_CEN_2010&for=tract:*&in=state:06+county:037"
 
@@ -143,30 +151,16 @@ https://en.wikipedia.org/wiki/JSON
 JSON in a nutshell: a list of key-value pairs.
 The current standard format since it is BOTH machine readable and has human readable layout (looks like a shopping list)
 
-### Modify your request - All Tracts in CA
-
-
-```{r}
-# add measure name (from Table of Contents), drop off '+county:037" in 'for=tract:*&in=state:06+county:037'
-
-request_more = "County_name,State_name,Tot_Population_CEN_2010,LAND_AREA,Females_CEN_2010&for=tract:*&in=state:06"
-
-paste0(url_base,'get=',request_more,'&key=',YOUR_KEY_GOES_HERE)
-
-# paste output, THEN, noquotes
-paste0(url_base,'get=',request_more,'&key=',YOUR_KEY_GOES_HERE) %>% noquote()
-
-```
 
 #### On Your Own: assemble an API call for New York State
 
 
 ```{r}
-url_base = ""
+# url_base = ""
 
-request = ""
+# request = ""
 
-?paste0
+# ?paste0
 ```
 
 ## Mental Exercise: Reflect on how the software steps make data obtainment a transparent process
@@ -185,8 +179,10 @@ Answer in the jupyter markdown block below
 # url_fin = paste0(url_base,'get=',request,'&key=',YOUR_KEY_GOES_HERE)  # pasted output has quotes
 # url_fin
 
-url_fin_more = paste0(url_base,'get=',request_more,'&key=',YOUR_KEY_GOES_HERE)  # pasted output has quotes
+url_fin_more = paste0(url_base,'get=',request,'&key=',YOUR_KEY_GOES_HERE)  # pasted output has quotes
 url_fin = url_fin_more
+
+# note, your local computer needs to be able to use https
 
 # ?GET
 req_url_fin = httr::GET(url_fin)
@@ -230,8 +226,8 @@ after 'clicking' the r assembled API call
 
 
 ```{r}
-json_req = '[["County_name","State_name","Tot_Population_CEN_2010","LAND_AREA","Females_CEN_2010","state","county","tract"],
-["Alameda County","California","2937","2.657","1476","06","001","400100"]]'
+# json_req = '[["County_name","State_name","Tot_Population_CEN_2010","LAND_AREA","Females_CEN_2010","state","county","tract"],
+# ["Alameda County","California","2937","2.657","1476","06","001","400100"]]'
 ```
 
 
@@ -292,7 +288,7 @@ sum(is.na(data_pdb_raw))
 dim(data_pdb_raw)
 
 # <8b> is a jupyter idiom for '...' shortening output
-data_pdb_raw
+head(data_pdb_raw)
 
 ```
 
@@ -335,7 +331,7 @@ data_pdb_raw %>% head()
 
 data_pdb_mat = data_pdb_raw[-1,] 
 
-data_pdb_mat
+head(data_pdb_mat)
 
 ```
 
@@ -373,8 +369,7 @@ data_pdb_df = data_pdb_mat %>% as.data.frame()
 
 
 ```{r}
-data_pdb_df %>%
-str()
+data_pdb_df %>% str()
 
 # want numeric numbers for
 # Tot_Population_CEN_2010
@@ -400,9 +395,9 @@ summary()
 
 
 ```{r}
-data_pdb_df = data_pdb_df %>% 
-mutate(      
-      ) 
+# data_pdb_df = data_pdb_df %>% 
+# mutate(      
+#       ) 
 
 # check structure
 ```
@@ -448,9 +443,9 @@ data_pdb_df %>% nrow()
 
 
 ```{r}
-data_pdb_df %>% 
-filter() %>% 
-nrow()
+# data_pdb_df %>% 
+# filter() %>% 
+# nrow()
 ```
 
 ### Basic Assertion: Does our sum of LA County population agree with Independent Source?
@@ -528,16 +523,16 @@ data_pdb_df_pk %>% head()
 
 ```
 
-#### On Your Own: ?separate() the 'state_county_tract' variable back into 3 separate variables for state, county, tract 
+#### On Your Own: separate() the 'state_county_tract' variable back into 3 separate variables for state, county, tract 
 
 
 ```{r}
-?tidyr::separate
+# ?tidyr::separate
 ```
 
 
 ```{r}
-data_pdb_df_pk %>% 
+# data_pdb_df_pk %>% 
 ```
 
  #### Many ways to Rome: Create Primary Key / Entity ID
@@ -627,12 +622,12 @@ http://api.census.gov/data/2015/pdb/tract/variables/LAND_AREA.json
 
 
 ```{r}
-ggplot(data_pdb_df_pk, aes(x=(LAND_AREA),y=(Tot_Population_CEN_2010))) + 
-geom_point()
-
-
-ggplot(data_pdb_df_pk, aes(x=log(LAND_AREA),y=log(Tot_Population_CEN_2010))) + 
-geom_point()
+# ggplot(data_pdb_df_pk, aes(x=(LAND_AREA),y=(Tot_Population_CEN_2010))) + 
+# geom_point()
+# 
+# 
+# ggplot(data_pdb_df_pk, aes(x=log(LAND_AREA),y=log(Tot_Population_CEN_2010))) + 
+# geom_point()
 
 ```
 
@@ -642,7 +637,7 @@ geom_point()
 County Level Count of Males and Females, sorted in decreasing order by Total Population Count
 
 
-```{r}
+```{r, eval=FALSE}
 str(data_pdb_df_pk)
 
 data_pdb_df_pk %>%
@@ -714,12 +709,12 @@ Output: 'data_pdb_df_pk'
 Note: your_output_dir = '/home/foo' needs to represent your output directory
 
 
-```{r}
+```{r, eval=FALSE}
 getwd()
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 # your_output_dir = 'Z:\\projects\\workshop_ccpr_stat\\workshop_data_workflow\\data_proc\\'
 
 your_output_dir = '/home/jovyan/work/test/'
@@ -734,7 +729,7 @@ write.csv(data_pdb_df_pk,paste0(your_output_dir,'data_pdb_df_pk.csv'),row.names=
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 # list.files('/home/jovyan/work/test/')
 list.files(your_output_dir)
 ```
@@ -742,7 +737,7 @@ list.files(your_output_dir)
 ### In .dta format (Stata), Output Table to Computer File
 
 
-```{r}
+```{r, eval=FALSE}
 # library(haven)
 
 # ?write_dta
@@ -757,7 +752,7 @@ write.dta(data_pdb_df_pk,paste0(your_output_dir,'data_pdb_df_pk_foreign.dta'))
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 list.files('/home/jovyan/work/test/')
 ```
 
@@ -771,7 +766,7 @@ Archive your software versions!
 
 
 ```{r}
-# sessionInfo()
+sessionInfo()
 ```
 
 ### Software Versions... big whoop... So What? How do I make use of this info?
@@ -789,7 +784,7 @@ Even easier than manually installing specific version 1-by-1
 https://rstudio.github.io/packrat/
 
 
-```{r}
+```{r, eval=FALSE}
 library(packrat)
 
 # ?packrat::bundle
@@ -803,8 +798,6 @@ packrat::unbundle(bundle=bundle_path)
 ## Transfer your Jupyter File (from tmpnb.org) to your personal computer
 Download as a .ipynb file or an .r
 
-![](http://gdurl.com/udho)
-
 
 # Appendix
 
@@ -816,10 +809,10 @@ http://jupyter.org/
 * Rstudio
 https://www.rstudio.com/
 
-* “The Elements of Data Analytic Style”
+* The Elements of Data Analytic Style
 https://leanpub.com/datastyle
 
-* “Tidy Data”
+* Tidy Data
 http://www.jstatsoft.org/v59/i10
 
 * Open Science Framework
