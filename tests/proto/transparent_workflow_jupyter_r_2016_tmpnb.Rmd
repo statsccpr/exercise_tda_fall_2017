@@ -113,7 +113,7 @@ https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html
 
 ```{r, echo=FALSE}
 # put key inside quotes
-
+YOUR_KEY_GOES_HERE = ""
 ```
 
 NOTE: Census switched to https so see [examples](https://api.census.gov/data/2015/pdb/blockgroup/examples.html)
@@ -136,10 +136,10 @@ request = "County_name,State_name,Tot_Population_CEN_2010,LAND_AREA,Females_CEN_
 # YOUR_KEY_GOES_HERE = ""
 
 # pasted output has quotes
-paste0(url_base,'get=',request,'&key=',YOUR_KEY_GOES_HERE)
+# paste0(url_base,'get=',request,'&key=',YOUR_KEY_GOES_HERE)
 
 # paste output, THEN, noquotes
-paste0(url_base,'get=',request,'&key=',YOUR_KEY_GOES_HERE) %>% noquote()
+# paste0(url_base,'get=',request,'&key=',YOUR_KEY_GOES_HERE) %>% noquote()
 
 
 ```
@@ -238,7 +238,7 @@ after 'clicking' the r assembled API call
 # NEEDS quotes around final url
 # url_fin = url_fin_more
 
-print(url_fin)
+# print(url_fin)
 
 data_pdb_raw = json_req %>%
 # url_fin %>% 
