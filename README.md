@@ -1,4 +1,10 @@
-# A skeleton directory to jumpstart an analysis project
+# A Directory for Transparent Data Analaysis Exercises for Fall 2017 
+
+Built on a skeleton directory to jumpstart an analysis project
+* Look at the Git history of this file to see how it evolved
+* Hint, I just changed the title name, added this paragraph here
+* added some files
+
 
 # Setup
 
